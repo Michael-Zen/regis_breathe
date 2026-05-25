@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-breathe-navy: #0A1E4A; /* Deepest blue backgrond */
+  --color-breathe-blue: #1A54A6; /* Main blue */
+  --color-breathe-cyan: #3DB8F5; /* Light blue accent */
+  --color-breathe-yellow: #FFC72C; /* Swoosh yellow */
+  
+  --font-sans: Tahoma, Arial, sans-serif;
+  --font-ticket: var(--font-outfit), sans-serif;
+}
+
+@layer base {
+  body {
+    /* Classic Windows background color */
+    @apply bg-[#ece9d8] text-black min-h-screen font-sans;
+  }
+}
