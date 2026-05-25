@@ -7,7 +7,6 @@ interface TicketProps {
   size: string;
   bib: string;
   refNo: string;
-  receiptNo: string;
   date: string;
   time: string;
   price: string;
