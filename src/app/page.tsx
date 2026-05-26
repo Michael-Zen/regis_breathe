@@ -5,6 +5,8 @@ import TicketPreview from "@/components/TicketPreview";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 
+const JERSEY_SIZES = ["XS", "S", "M", "L", "XL", "2XL"];
+
 export default function Home() {
   const [formData, setFormData] = useState({
     name: "",
@@ -252,17 +254,20 @@ export default function Home() {
                 <tr className="border-b border-slate-200 hover:bg-slate-100 transition-colors">
                   <td className="w-2/5 py-2.5 px-3 font-semibold text-slate-700 bg-slate-100/50 border-r border-slate-200">Ukuran Pakaian</td>
                   <td className="w-3/5 py-1 px-2">
-                    <select
+                    <input
+                      type="text"
                       name="size"
                       value={formData.size}
                       onChange={handleInputChange}
+                      list="jersey-size-options"
+                      placeholder="Pilih atau ketik ukuran sendiri"
                       className="w-full bg-white border border-slate-300 px-2 py-1 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all rounded-sm text-slate-800"
-                    >
-                      <option>S</option>
-                      <option>M</option>
-                      <option>L</option>
-                      <option>XL</option>
-                    </select>
+                    />
+                    <datalist id="jersey-size-options">
+                      {JERSEY_SIZES.map((size) => (
+                        <option key={size} value={size} />
+                      ))}
+                    </datalist>
                   </td>
                 </tr>
               </tbody>
