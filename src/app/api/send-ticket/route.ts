@@ -1,6 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
+type MailAccount = {
+  user: string;
+  pass: string;
+};
+
+const getMailAccounts = (): MailAccount[] => {
+  const accounts = [1, 2, 3]
+    .map((index) => ({
+      user: process.env[`EMAIL_USER_${index}`],
+      pass: process.env[`EMAIL_PASS_${index}`],
+    }))
+    .filter(
+      (account): account is MailAccount =>
+        Boolean(account.user) && Boolean(account.pass)
+    );
+
+  if (accounts.length > 0) {
+    return accounts;
+  }
+
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    return [{ user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }];
+  }
+
+  return [];
+};
+
+const pickMailAccount = (accounts: MailAccount[], email: string) => {
+  const hash = Array.from(email).reduce(
+    (total, char) => total + char.charCodeAt(0),
+    0
+  );
+
+  return accounts[hash % accounts.length];
+};
+
 export async function POST(req: NextRequest) {
   try {
     const { name, email, ticketBase64 } = await req.json();
@@ -15,6 +51,16 @@ export async function POST(req: NextRequest) {
     // Convert Base64 dataURIs directly to Buffers for Nodemailer attachments
     // A standard data URI looks like "data:image/png;base64,iVBOR..."
     const ticketData = ticketBase64.split("base64,")[1];
+    const accounts = getMailAccounts();
+
+    if (accounts.length === 0) {
+      return NextResponse.json(
+        { error: "Email sender credentials are not configured" },
+        { status: 500 }
+      );
+    }
+
+    const sender = pickMailAccount(accounts, email);
 
     const transporter = nodemailer.createTransport({
       host: "smtp-mail.outlook.com",
@@ -24,13 +70,13 @@ export async function POST(req: NextRequest) {
          ciphers: 'SSLv3'
       },
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: sender.user,
+        pass: sender.pass,
       },
     });
 
     const mailOptions = {
-      from: `"Breathe 5K Ticketing" <${process.env.EMAIL_USER}>`,
+      from: `"Breathe 5K Ticketing" <${sender.user}>`,
       to: email,
       subject: `Konfirmasi Pendaftaran & E-Tiket: Breathe 5K - ${name}`,
       text: `Halo ${name},\n\nTerima kasih telah mendaftar di ajang Breathe 5K Fun Run!\n\nPendaftaran Anda telah berhasil dikonfirmasi. Terlampir E-Tiket pendaftaran Anda.\n\nHarap tunjukkan dokumen ini (dicetak atau versi digital) beserta kartu identitas pada saat pengambilan Race Pack.\n\nSalam Hangat,\nPanitia Breathe 5K`,
